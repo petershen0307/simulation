@@ -1,40 +1,56 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <deque>
 #include <cstring>
 #include <cstdlib>
 #include <ctime>
 
 using namespace std;
 
-/*
-data item輸入進來後
-先不要給編號key的值
-先對資料的frequency做sort
-然後再給編號key的值
-*/
+//debug------
+#include "include\struct_seq_search.h"
 
 //--------------VF algorithm structure--------------
 #include "include\struct_indexTree_VF.h"
 //--------------VF function prototype---------------
-#include "include\func_indexTree_VF.h"
+void createBroadcastSeq( vector<DataItemVF>&, deque<Seq_basic *>& , deque<VFTree *>& );
+
+//--------------main function-----------------------
+void inputData(vector<DataItemVF>& );
 
 int main()
 {
 	vector<DataItemVF> dataItem;
     inputData(dataItem);
-    //callCValgorithm(dataItem);
+    deque<Seq_basic *> seq;
+	deque<VFTree *> index_seq;
+	createBroadcastSeq( dataItem, seq, index_seq );
+	cout << "key        ";
+	for( unsigned int i = 0; i < seq.size(); ++i )
+	{
+		cout << seq[i]->key << " ";
+	}
+	cout << endl << "distance   ";
+	for( unsigned int i = 0; i < seq.size(); ++i )
+	{
+		cout << seq[i]->distanceToRoot << " ";
+	}
+	cout << endl << "same level ";
+	for( unsigned int i = 0; i < seq.size(); ++i )
+	{
+		cout << seq[i]->nextSameLevelIndex << " ";
+	}
 
-    VFTree *root;
-	root = buildVFTree(dataItem);
-	cout<<endl;
-	printVFTree(*root);
     return 0;
 }
 
+/*
+input data must had been sorted
+*/
 void inputData(vector<DataItemVF>& dataItem)
 {
-    char fileName[] = "paper_test_11_balance.txt";
+    char fileName[] = "paper_test_11.txt";
     fstream file;
     file.open(fileName,fstream::in | fstream::out | fstream::app);
     if(!file)

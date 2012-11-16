@@ -35,6 +35,7 @@ struct VFTree
 	int rangeMaxId;
 	int rangeMinId;
 	std::vector<VFTree *> children;
+	int parentKey;//方便判斷是否是同層index
 
 	//constructor
 	VFTree(VFTree::Type type, int key, float freq, int maxId = 0, int minId = 0, int rangeMaxId = 0, int rangeMinId = 0)
