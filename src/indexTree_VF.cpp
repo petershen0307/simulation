@@ -41,10 +41,6 @@ bool isMoreThanFuncFreq_root(VFTree* lhs, VFTree* rhs)
     return (lhs->freq > rhs->freq);
 }
 
-bool isMoreThanFunc_seq( Seq_basic *lhs, Seq_basic *rhs )
-{
-	return ( lhs > rhs );
-}
 
 //search_n
 bool searchDataItemVF (DataItemVF i, int j)
@@ -52,15 +48,6 @@ bool searchDataItemVF (DataItemVF i, int j)
 	return (i.key == j);
 }
 
-bool search_n_seq( Seq_basic *t, int minId )
-{
-	return ( t->key == minId );
-}
-
-bool search_n_vftree( VFTree *t, int key )
-{
-	return ( t->key == key );
-}
 
 //計算y(i)
 int calculateYi(vector<DataItemVF>& data, float& yOfi)
@@ -122,6 +109,8 @@ VFTree* buildVFTree(vector<DataItemVF>& dataItem)
     //partition
     partitionVF(*root, dataItem);
     //return tree root
+    indexCounterVFTree = 0;
+    enterId(*root);
     return root;
 }
 
@@ -185,86 +174,6 @@ void partitionVF(VFTree& root, vector<DataItemVF>& data)
     //return
 }
 
-//debug
-void printDataItemVF(VFTree& root, vector<DataItemVF>& data, bool rootOrVect)
-{
-    if(rootOrVect)
-    {
-        cout << "root size " << root.children.size() << endl;
-        for(unsigned int i=0; i!=root.children.size(); ++i)
-        {
-            VFTree* tmp = root.children[i];
-            switch(tmp->type)
-            {
-            case VFTree::Index:
-                cout << "[index node] ";
-                break;
-            case VFTree::Data:
-                cout << "[data node] ";
-                break;
-            default:
-                cout << "unknown";
-            }
-            cout << "key " << tmp->key;
-            cout << " freq " << tmp->freq << endl;
-        }
-    }
-    else
-    {
-        cout << "data size" << data.size() << endl;
-        for(unsigned int i=0; i!=data.size(); ++i)
-        {
-            cout << "key " << data[i].key;
-            cout << " freq " << data[i].freq << endl;
-        }
-    }
-}
-
-//debug
-void printVFTree(VFTree& root)
-{
-    if(root.type == VFTree::Index)
-    {
-        cout << endl << "index key " << root.key << "  index freq "
-             << root.freq << " root children size " << root.children.size() << endl << "-----------" << endl;
-    }
-	int count3 = 0;
-	for( vector<VFTree *>::iterator i = root.children.begin() ; i != root.children.end(); ++i )
-	{
-		if( (*i)->type == VFTree::Index )
-			++count3;
-	}
-	cout << count3 << endl;
-	if( count3 >= 3 || root.key == -2 )
-	{
-    for(unsigned int i=0; i!=root.children.size(); ++i)
-    {
-        if(root.children[i]->type == VFTree::Data)
-        {
-            cout << "data key " << root.children[i]->key << "  data freq" << root.children[i]->freq << endl;
-			cout << "range Min Id " << root.children[i]->rangeMinId << endl;
-            cout << "range Max Id " << root.children[i]->rangeMaxId << endl;
-		}
-        else if(root.children[i]->type == VFTree::Index)
-        {
-            cout << "index key " << root.children[i]->key << "  index freq" << root.children[i]->freq << endl;
-            cout << "range Min Id " << root.children[i]->rangeMinId << endl;
-            cout << "range Max Id " << root.children[i]->rangeMaxId << endl;
-            cout << "min Id " << root.children[i]->minId << endl;
-            cout << "max Id " << root.children[i]->maxId << endl;
-            cout << "parent key" << root.children[i]->parentKey << endl;
-        }
-        cout << "-----------" << endl;
-    }
-	}
-    for(unsigned int i=0; i!=root.children.size(); ++i)
-    {
-        if(root.children[i]->type == VFTree::Index)
-        {
-            printVFTree(*root.children[i]);
-        }
-    }
-}
 
 //enter range of id(key) to index and data node
 void enterId(VFTree& root)
@@ -348,131 +257,4 @@ void enterId(VFTree& root)
 			root.children[i]->rangeMinId = root.rangeMinId;
 		}
 	}
-}
-
-//VF tree to optimal order sequence
-void vfTreeToSeq_basic( VFTree& root, vector<DataItemVF>& dataItems, deque<Seq_basic *>& seq,
-					    deque<VFTree *>& index_seq )
-{
-//step1 sort the data
-	for( unsigned int i = 0; i != dataItems.size(); ++i )
-	{
-		seq.push_back( new Seq_basic( dataItems[i].key ) );
-	}
-//step2 選擇index node ai,ai的child nodes都是leaves,移除ai
-	VFTree *node = 0;
-	/*
-	while是將tree中的index取出,
-	while結束後,填上distanceToRoot, nextSameLevelIndex
-	利用
-	*/
-	while( node != &root )
-	{
-		node = findIndexWithLeaves( &root );
-		//cout << node->key << endl;
-		//index_seq.push_front( new Seq_basic( node->key, node->rangeMaxId, node->minId ) );//not necessary
-		index_seq.push_front( node );
-
-
-//step3 插入ai到SEQ,在最大access frequency的child node前
-		/*
-		因為有些index底下有data node,有些只有index node,所以要分開處理
-		*/
-		deque<Seq_basic *>::iterator it;
-		if( node->minId == 0 )//deal with no data node's index
-		{
-			vector<Seq_basic *> temp;
-			for( unsigned int i = 0; i != node->children.size(); ++i )
-			{
-				/*cout << "debug " << node->children[i]->key << endl;
-				for( unsigned int c=0;c!=seq.size();++c )
-				{
-					cout << "seq key " << seq[c]->key << endl;
-				}*/
-				it = search_n( seq.begin(), seq.end(), 1, node->children[i]->key, search_n_seq );
-				temp.push_back( *it );
-			}
-			if( temp.size() > 1 )
-			{
-				stable_sort( temp.begin(), temp.end(), isMoreThanFunc_seq );
-			}
-			seq.insert( ( search_n( seq.begin(), seq.end(), 1, temp.front()->key, search_n_seq ) ),
-						 new Seq_basic( node->key, node->rangeMaxId, node->minId ) );
-		}
-		else//index with data node
-		{
-			it = search_n( seq.begin(), seq.end(), 1, node->minId, search_n_seq );
-			seq.insert( it, new Seq_basic( node->key, node->rangeMaxId, node->minId ) );
-		}
-//step4 goto setp2 until T become a single node(root)
-	}
-	//填入distance to root, next same level index
-	for( unsigned int i = 0; i != seq.size(); ++i )
-	{
-		//next same level index
-		if( seq[i]->key < 0 )
-		{
-			deque<VFTree *>::iterator front;
-			front = search_n( index_seq.begin(), index_seq.end(), 1, seq[i]->key, search_n_vftree );
-			/*if( it != index_seq.end() )
-			{
-				deque<Seq_basic *>::iterator it_seq;
-				it_seq = search_n( seq.begin(), seq.end(), 1, (*it)->parentKey, search_n_seq );
-				seq[i]->nextSameLevelIndex
-			}*/
-			for( unsigned int j = i+1; j != seq.size(); ++j )
-			{
-				if(seq[j]->key < 0)
-				{
-					deque<VFTree *>::iterator back;
-					back = search_n( index_seq.begin(), index_seq.end(), 1, seq[j]->key, search_n_vftree );
-					if( (*front)->parentKey == (*back)->parentKey && seq[i]->key != (*back)->parentKey )
-					{
-						seq[i]->nextSameLevelIndex = j - i;
-						break;//找到之後就該break
-					}
-				}
-			}
-
-		}
-		//distance to root
-		seq[i]->distanceToRoot = seq.size() - i;
-	}
-}
-
-VFTree* findIndexWithLeaves(VFTree* root)
-{
-	bool isDataNodes = true;
-	VFTree *node;
-	for( int i = 0; i != (int)root->children.size(); ++i )
-	{
-		if( root->children[i]->type == VFTree::Index )
-		{
-			isDataNodes = false;
-			node = findIndexWithLeaves( root->children[i] );
-			if( node == root->children[i] )
-			{
-				//root->children.erase( root->children.begin()+i );
-				root->children[i]->type = VFTree::Data;
-			}
-			break;
-		}
-	}
-	if( isDataNodes == true )
-	{
-		return root;
-	}
-	return node;
-}
-
-void createBroadcastSeq( vector<DataItemVF>& dataItem, deque<Seq_basic *>& seq, deque<VFTree *>& index_seq )
-{
-	VFTree *root;
-	root = buildVFTree(dataItem);
-	cout<<endl;
-	enterId(*root);
-
-	printVFTree(*root);
-	vfTreeToSeq_basic( *root, dataItem, seq, index_seq);
-	delete root;
 }

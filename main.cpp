@@ -2,52 +2,40 @@
 #include <fstream>
 #include <vector>
 #include <deque>
-#include <cstring>
-#include <cstdlib>
-#include <ctime>
+#include <random>
 
 using namespace std;
 
-//debug------
-#include "include\struct_seq_search.h"
 
 //--------------VF algorithm structure--------------
 #include "include\struct_indexTree_VF.h"
+#include "include\struct_seq_search.h"
+
 //--------------VF function prototype---------------
-void createBroadcastSeq( vector<DataItemVF>&, deque<Seq_basic *>& , deque<VFTree *>& );
+#include "include\func_build_seq.h"
 
 //--------------main function-----------------------
 void inputData(vector<DataItemVF>& );
+
+//debug
+#include "debug_func.h"
+
+//simulator
+#include "include\func_simulator.h"
+
 
 int main()
 {
 	vector<DataItemVF> dataItem;
     inputData(dataItem);
     deque<Seq_basic *> seq;
-	deque<VFTree *> index_seq;
+	deque<Seq_min_fields *> seq_min;
 	cout << dataItem.size() << endl;
-	createBroadcastSeq( dataItem, seq, index_seq );
-	cout << "key        ";
+	createBroadcastSeq( dataItem, seq, seq_min );
 
-	for( unsigned int i = 0; i < seq.size(); ++i )
-	{
-		cout.width(3);
-		cout << seq[i]->key << " ";
-	}
-	cout.width(0);
-	cout << endl << "distance   ";
-	for( unsigned int i = 0; i < seq.size(); ++i )
-	{
-		cout.width(3);
-		cout << seq[i]->distanceToRoot << " ";
-	}
-	cout.width(0);
-	cout << endl << "same level ";
-	for( unsigned int i = 0; i < seq.size(); ++i )
-	{
-		cout.width(3);
-		cout << seq[i]->nextSameLevelIndex << " ";
-	}
+	//simulator_initial( dataItem, seq_min.size() );
+	simulator( dataItem, seq_min );
+
     return 0;
 }
 
@@ -56,7 +44,7 @@ input data must had been sorted
 */
 void inputData(vector<DataItemVF>& dataItem)
 {
-    char fileName[] = "test_30.txt";
+    char fileName[] = "paper_test_11.txt";
     fstream file;
     file.open(fileName,fstream::in | fstream::out | fstream::app);
     if(!file)
