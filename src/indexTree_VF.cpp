@@ -81,7 +81,7 @@ static int indexCounterVFTree = 0;
 //now index key is negative, data key is positive
 
 //implement VF algorithm
-VFTree* buildVFTree(vector<DataItemVF>& dataItem)
+void buildVFTree( VFTree*& root, vector<DataItemVF>& dataItem )
 {
     //create tree root，將所有data加入到root, 將data先做排序frequency由大到小
     //indexCounterVFTree = dataItem.size();
@@ -96,10 +96,13 @@ VFTree* buildVFTree(vector<DataItemVF>& dataItem)
     float totalFreq = accumulate(dataItem.begin(), dataItem.end(), 0.0, sumFunc);
     /*VFTree *root = new VFTree(VFTree::Index, ++indexCounterVFTree, totalFreq,
                               dataItem.back().key, dataItem.front().key,
-                              dataItem.back().key, dataItem.front().key);*/
-	VFTree *root = new VFTree(VFTree::Index, --indexCounterVFTree, totalFreq,
+                              dataItem.back().key, dataItem.front().key);//index key是正數*/
+	/*VFTree *root = new VFTree(VFTree::Index, --indexCounterVFTree, totalFreq,
                               dataItem.back().key, dataItem.front().key,
-                              dataItem.back().key, dataItem.front().key);
+                              dataItem.back().key, dataItem.front().key);//index key是負數*/
+    root = new VFTree(VFTree::Index, --indexCounterVFTree, totalFreq,
+                              dataItem.back().key, dataItem.front().key,
+                              dataItem.back().key, dataItem.front().key);//取代return的方法
     for(unsigned i=0; i != dataItem.size(); ++i)
     {
         ///設定data key(id)
@@ -111,7 +114,7 @@ VFTree* buildVFTree(vector<DataItemVF>& dataItem)
     //return tree root
     indexCounterVFTree = 0;
     enterId(*root);
-    return root;
+    //return root;
 }
 
 //partition

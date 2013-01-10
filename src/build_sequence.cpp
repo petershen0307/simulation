@@ -18,26 +18,19 @@ using namespace std;
 #include "..\debug_func.h"
 
 //organize total function
-void createBroadcastSeq( vector<DataItemVF>& dataItem, deque<Seq_basic *>& seq, deque<Seq_min_fields *>& seq_min )
+void createBroadcastSeq( vector<DataItemVF>& dataItem, deque<Seq_min_fields *>& seq_min )
 {
 	VFTree *root;
-	root = buildVFTree(dataItem);
-	cout<<endl;
+	buildVFTree( root, dataItem );
+
 
 	drawTheTree( *root );
-	//printVFTree(*root);
 
 	deque<VFTree *> index_seq;
-	vfTreeToSeq_basic( *root, dataItem, seq, index_seq);
-	printBroadcastSeq( seq );
+	buildVFTree( root, dataItem );
+	vfTreeToSeq_min_fields( *root, dataItem, seq_min, index_seq );
+	//printBroadcastSeq( seq_min );
 	delete root;
-	index_seq.clear();
-cout << "-----------------------------------------------------------------------------------------------" << endl;
-	VFTree *root2;
-	root2 = buildVFTree(dataItem);
-	vfTreeToSeq_min_fields( *root2, dataItem, seq_min, index_seq );
-	printBroadcastSeq( seq_min );
-	delete root2;
 
 }
 

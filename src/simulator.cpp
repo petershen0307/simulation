@@ -15,44 +15,26 @@ using namespace std;
 
 #include "..\include\func_simulator.h"
 
-#define USERS 10
 
 
+//user編號(first) desire key(second)
 static map<int, int> user_desire_key;
 static map<int, int> user_wake_up_time;//time = slot
 static map<int, int> user_tuning_time;//time = slot
 static map<int, int> user_access_time;//time = slot
 
-//計算結果
-double avg_result( map<int, int>& result )
+void simulator( map<int,int>& output_tuning_time, map<int,int>& output_access_time,
+				vector<DataItemVF>& dataItem, deque<Seq_min_fields *>& seq, int users )
 {
-	double sum = 0.0;
-	for( map<int, int>::iterator it = result.begin(); it != result.end(); ++it )
-	{
-		sum += it->second;
-	}
-	return sum/result.size();
-}
+	simulator_initial( dataItem, seq.size(), users );
 
-void simulator( vector<DataItemVF>& dataItem, deque<Seq_min_fields *>& seq )
-{
-	int userN=100;
-	cout << "input users = ";
-	cin >> userN;
-	simulator_initial( dataItem, seq.size(), userN );
 
-	for( int i=1; i<=userN; ++i )
+	for( int i=1; i<=users; ++i )
 	{
 		searching( i, user_desire_key[i], user_wake_up_time[i], seq );
-
-		/*searching( i, 31-i, user_wake_up_time[i], seq );//test
-		cout << "desire key" << 31-i << endl;
-		cout << "wake up time" << user_wake_up_time[i] << endl;
-		cout << "access time" << user_access_time[i] << endl
-			 << "tuning time" << user_tuning_time[i] << "---------------" << endl;*/
+		output_tuning_time[i] = user_tuning_time[i];
+		output_access_time[i] = user_access_time[i];
 	}
-	cout << "mean tuning time " << avg_result( user_tuning_time ) << endl;
-	cout << "mean access time " << avg_result( user_access_time );
 }
 //search_n
 bool search_n_seq( Seq_min_fields *t, int minId )
@@ -138,6 +120,11 @@ void searching( int userId, int desire_key, int slots, deque<Seq_min_fields *>& 
 
 void simulator_initial( vector<DataItemVF>& dataItem, int seq_size, int user_number )
 {
+	user_desire_key.clear();
+	user_wake_up_time.clear();//time = slot
+	user_tuning_time.clear();//time = slot
+	user_access_time.clear();//time = slot
+//------------以上跑下一個測試data的時候,上一個資料要清除
 	fstream filestr;
 	filestr.open("desire.txt",fstream::in | fstream::out | fstream::trunc);
 //simulation
@@ -165,6 +152,7 @@ void simulator_initial( vector<DataItemVF>& dataItem, int seq_size, int user_num
 		user_wake_up_time.insert( pair<int, int>( i, random_time( generator ) ) );
 		filestr << i << "," << desire_key << "\n";
 	}
+	filestr.close();
 	/*cout << "desire key" << endl;
 	for( map<int, int>::iterator it = user_desire_key.begin(); it != user_desire_key.end(); ++it )
 	{
